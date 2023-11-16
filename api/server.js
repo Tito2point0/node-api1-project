@@ -2,43 +2,85 @@
 const express = require("express");
 const User = require("./users/model");
 const server = express();
+server.use(express.json());
+
+// server.post("/api/users", (req, res) => {
+//   const user = req.body;
+//   if (!user.name || !user.bio) {
+//     res.status(422).json({
+//       message: "name and bio required"
+//     });
+//   } else {
+//       User.insert(user)
+//       .then(stuff => {
+//           console.log(stuff)
+//       })
+//       .catch((err) => {
+//         res.status(500).json({
+//           message: "error creating user",
+//           err: err.message,
+//           stack: err.stack,
+//         });
+//       });
+     
+//   }
+// });
+server.post("/api/users", (req, res) => {
+    const user = req.body;
+    if (!user.name || !user.bio) {
+      res.status(400).json({
+        message: "Please provide name and bio for the user"
+      });
+    } else {
+      User.insert(user)
+        .then((insertedUser) => {
+          console.log(insertedUser); // Assuming your insert method returns the inserted user
+          res.status(201).json(insertedUser); // Respond with the inserted user or an appropriate response
+        })
+        .catch((err) => {
+          res.status(500).json({
+            message: "error creating user",
+            err: err.message,
+            stack: err.stack,
+          });
+        });
+    }
+  });
 
 server.get("/api/users", (req, res) => {
   User.find()
-      .then(users => {
-        res.json(users)
-          //   console.log(users)
-        //   throw new Error('wtf')
-      })
-      .catch(err => {
-          res.status(500).json({
-              message: 'error getting users',
-              err: err.message,
-              stack: err.stack,
-          })
+    .then((users) => {
+      res.json(users);
+        console.log(users)
+      //   throw new Error('wtf')
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "error getting users",
+        err: err.message,
+        stack: err.stack,
       });
+    });
 });
 
 server.get("/api/users/:id", (req, res) => {
-    User.findById(req.params.id)
-        .then(user => {
-            if (!user) {
-                res.status(404).json({
-                    message: "The user with the specified ID does not exist",
-                    
-                })
-                
-            }
-            res.json(user)
-        })
-        .catch(err => {
-            res.status(500).json({
-                message: 'error getting user',
-                err: err.message,
-                stack: err.stack,
-            })
+  User.findById(req.params.id)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          message: "The user with the specified ID does not exist",
         });
-  });
+      }
+      res.json(user);
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "error getting user",
+        err: err.message,
+        stack: err.stack,
+      });
+    });
+});
 
 server.use("*", (req, res) => {
   res.status(404).json({
